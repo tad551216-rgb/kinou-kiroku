@@ -1,0 +1,17 @@
+{
+  "name": "機能訓練きろく帖",
+  "short_name": "機能訓練きろく帖",
+  "description": "個別機能訓練の計画づくりと実施記録。見直しの期限を見える化します。データは端末の中だけに保存されます。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3F1EA",
+  "theme_color": "#1B2A4A",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

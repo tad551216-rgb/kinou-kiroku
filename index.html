@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>機能訓練きろく帖 | つくる手帖</title>
+<meta name="description" content="個別機能訓練加算のための計画づくりと実施記録。3か月ごとの見直し・説明の期限を一覧で見える化し、計画書の印刷までできます。データは端末の中だけに保存されます。">
+<meta name="theme-color" content="#1B2A4A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="機能訓練きろく帖">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root{
+  --ink:#1B2A4A; --ink2:#3A4A66; --paper:#F3F1EA; --paper2:#ECE9DF;
+  --line:#D8D3C4; --line2:#B9B2A0; --verm:#C2603A; --verm2:#9F4A2B;
+  --green:#3D6B52; --green2:#EFF5F1; --muted:#7A7567; --white:#fff;
+  --warn:#FBF0EC; --blue:#35706B; --gold:#8A6A20; --gold2:#FDF6E7;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+  background:var(--paper);color:var(--ink);line-height:1.7;font-size:15px;
+  background-image:linear-gradient(#E3DFD3 1px,transparent 1px),linear-gradient(90deg,#E3DFD3 1px,transparent 1px);
+  background-size:26px 26px;padding-bottom:80px;
+}
+button,input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink);}
+button{cursor:pointer;}
+:focus-visible{outline:2px solid var(--verm);outline-offset:2px;}
+
+header{background:var(--ink);color:#fff;padding:14px 16px;
+  padding-top:calc(14px + env(safe-area-inset-top));position:sticky;top:0;z-index:30;}
+header h1{font-size:20px;font-weight:700;letter-spacing:.04em;font-family:"Hiragino Mincho ProN",serif;}
+header .sub{font-size:11px;letter-spacing:.16em;color:#B9C4D6;margin-top:2px;}
+header .sub b{color:#fff;font-weight:400;letter-spacing:.02em;}
+
+nav.tabs{display:flex;background:var(--paper2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:29;}
+nav.tabs button{flex:1;background:none;border:none;padding:11px 4px 9px;font-size:13px;font-weight:700;
+  color:var(--ink2);border-bottom:3px solid transparent;}
+nav.tabs button.on{color:var(--verm);border-bottom-color:var(--verm);background:var(--paper);}
+
+.wrap{max-width:720px;margin:0 auto;padding:16px 14px 0;}
+.page{display:none;} .page.on{display:block;}
+h2.sec{font-size:15px;font-weight:700;margin:20px 0 8px;padding-left:9px;border-left:4px solid var(--verm);line-height:1.4;}
+h2.sec:first-child{margin-top:4px;}
+h3.sub{font-size:13.5px;font-weight:700;color:var(--ink2);margin:16px 0 6px;}
+.card{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;}
+.note{font-size:12.5px;color:var(--muted);line-height:1.8;}
+.note b{color:var(--ink2);}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  border:1.5px solid var(--line2);background:var(--white);color:var(--ink);
+  border-radius:9px;padding:11px 16px;font-size:14px;font-weight:700;}
+.btn.wide{width:100%;margin-bottom:8px;}
+.btn.p{background:var(--ink);color:#fff;border-color:var(--ink);}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green);}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:8px;}
+.row{display:flex;gap:8px;flex-wrap:wrap;}
+.row>.btn{flex:1;min-width:130px;}
+
+/* 期限ボード */
+.board{display:grid;gap:9px;}
+.bcard{background:var(--white);border:1px solid var(--line);border-radius:12px;
+  padding:12px 13px;text-align:left;width:100%;border-left-width:5px;border-left-style:solid;}
+.bcard.over{border-left-color:var(--verm);}
+.bcard.soon{border-left-color:var(--gold);}
+.bcard.ok{border-left-color:var(--green);}
+.bcard.none{border-left-color:var(--line2);}
+.bhead{display:flex;align-items:baseline;gap:9px;margin-bottom:5px;}
+.bhead b{font-size:16.5px;flex:1;min-width:0;}
+.bhead .days{font-size:13px;font-weight:700;white-space:nowrap;}
+.bcard.over .days{color:var(--verm2);} .bcard.soon .days{color:var(--gold);}
+.bcard.ok .days{color:var(--green);} .bcard.none .days{color:var(--muted);}
+.bmeta{font-size:12px;color:var(--muted);margin-bottom:7px;}
+.checks{display:flex;flex-wrap:wrap;gap:5px;}
+.checks span{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;border:1px solid;}
+.checks span.y{background:var(--green2);color:var(--green);border-color:#CBDDD1;}
+.checks span.n{background:var(--warn);color:var(--verm2);border-color:#E9CFC4;}
+.summary{display:flex;gap:8px;margin-bottom:12px;}
+.summary div{flex:1;background:var(--white);border:1px solid var(--line);border-radius:11px;
+  padding:10px 8px;text-align:center;}
+.summary b{display:block;font-size:22px;line-height:1.2;}
+.summary span{font-size:11px;color:var(--muted);}
+.summary .over b{color:var(--verm2);} .summary .soon b{color:var(--gold);} .summary .ok b{color:var(--green);}
+
+.ulist{display:grid;gap:8px;}
+.urow{display:flex;align-items:center;gap:10px;background:var(--white);
+  border:1px solid var(--line);border-radius:11px;padding:11px 12px;text-align:left;width:100%;}
+.urow .nm{flex:1;min-width:0;}
+.urow .nm b{font-size:16px;display:block;line-height:1.4;}
+.urow .nm span{font-size:12px;color:var(--muted);}
+.urow .st{flex:none;font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;
+  border:1px solid var(--line);color:var(--muted);background:var(--paper);}
+.urow .st.done{background:var(--green2);color:var(--green);border-color:#CBDDD1;}
+.empty{text-align:center;color:var(--muted);font-size:13.5px;padding:26px 10px;line-height:1.9;}
+
+dialog{border:none;padding:0;background:none;max-width:100%;}
+dialog::backdrop{background:rgba(27,42,74,.6);}
+.sheet{background:var(--paper);width:min(700px,94vw);max-height:88vh;overflow:auto;border-radius:16px;padding:0 0 16px;}
+.sheet-head{position:sticky;top:0;background:var(--ink);color:#fff;padding:13px 16px;
+  display:flex;align-items:center;gap:10px;border-radius:16px 16px 0 0;z-index:2;}
+.sheet-head b{flex:1;font-size:17px;}
+.sheet-head button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.5);
+  color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;}
+.sheet-body{padding:14px;}
+
+.fld{margin-bottom:12px;}
+.fld>label{display:block;font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:4px;}
+.fld input[type=text],.fld input[type=date],.fld input[type=number],.fld select,.fld textarea{
+  width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 11px;background:var(--white);}
+.fld textarea{min-height:70px;resize:vertical;line-height:1.7;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.daysel{display:flex;gap:5px;}
+.daysel label{flex:1;text-align:center;border:1.5px solid var(--line2);border-radius:8px;
+  padding:8px 0;font-size:13px;font-weight:700;color:var(--ink2);background:var(--white);}
+.daysel label.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.daysel input{display:none;}
+
+/* 期限のしるし */
+.duebox{border-radius:10px;padding:11px 13px;border:1.5px solid;font-size:13.5px;line-height:1.75;margin-bottom:12px;}
+.duebox.over{background:var(--warn);border-color:#E9CFC4;color:var(--verm2);}
+.duebox.soon{background:var(--gold2);border-color:#E8DBBB;color:var(--gold);}
+.duebox.ok{background:var(--green2);border-color:#CBDDD1;color:var(--green);}
+.duebox.none{background:var(--paper2);border-color:var(--line);color:var(--muted);}
+.duebox b{display:block;font-size:15.5px;margin-bottom:1px;}
+
+/* プログラム行 */
+.prog{background:var(--white);border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:9px;position:relative;}
+.prog .del{position:absolute;top:8px;right:8px;border:none;background:none;color:var(--verm2);font-size:18px;padding:2px 6px;}
+.prog .cat{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;
+  padding:2px 10px;background:var(--paper);border:1px solid var(--line);color:var(--ink2);margin-bottom:7px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chips button{border:1.5px solid var(--line2);background:var(--white);border-radius:999px;
+  padding:7px 13px;font-size:13px;font-weight:700;color:var(--ink2);}
+.chips button.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.chips.multi button.on{background:var(--blue);border-color:var(--blue);color:#fff;}
+.chips.g button.on{background:var(--green);border-color:var(--green);}
+
+.outbox{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:11px;
+  font-size:12.5px;white-space:pre-wrap;word-break:break-all;max-height:190px;overflow:auto;
+  line-height:1.75;font-family:ui-monospace,monospace;}
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+table.tbl th,table.tbl td{border:1px solid var(--line);padding:6px 7px;text-align:left;vertical-align:top;}
+table.tbl th{background:var(--paper2);font-weight:700;white-space:nowrap;}
+.scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+.datebar{display:flex;align-items:center;gap:8px;background:var(--white);
+  border:1px solid var(--line);border-radius:12px;padding:9px 10px;margin-bottom:12px;}
+.datebar input[type=date]{flex:1;border:none;background:none;font-size:16px;font-weight:700;min-width:0;}
+.datebar button{border:1px solid var(--line2);background:var(--white);border-radius:8px;width:36px;height:36px;font-size:15px;flex:none;}
+.daylabel{font-size:12.5px;color:var(--muted);margin:-4px 0 12px 2px;}
+
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:#fff;padding:11px 20px;border-radius:999px;font-size:13.5px;font-weight:700;
+  opacity:0;pointer-events:none;transition:.22s;z-index:100;max-width:88vw;text-align:center;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.warnbox{background:var(--warn);border:1px solid #E9CFC4;border-radius:10px;padding:11px 13px;
+  font-size:12.5px;color:var(--verm2);line-height:1.85;}
+.okbox{background:var(--green2);border:1px solid #CBDDD1;border-radius:10px;padding:11px 13px;
+  font-size:12.5px;color:var(--green);line-height:1.85;}
+
+@media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>機能訓練きろく帖</h1>
+  <div class="sub">TSUKURU TECHO ｜ <b>個別機能訓練の計画と記録</b></div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="on" data-tab="due" role="tab">期限</button>
+  <button data-tab="plan" role="tab">計画</button>
+  <button data-tab="rec" role="tab">きろく</button>
+  <button data-tab="out" role="tab">出力</button>
+</nav>
+
+<div class="wrap">
+
+  <!-- 期限ボード -->
+  <section class="page on" id="p-due">
+    <h2 class="sec">見直しの期限</h2>
+    <div class="summary" id="dueSummary"></div>
+    <div class="board" id="dueBoard"></div>
+    <p class="note" style="margin-top:14px;">計画の作成日から<b>3か月後</b>を、次の見直しの目安として出しています。あわせて、居宅訪問・ご説明・実施記録がそろっているかを表示します。<b>実際に必要な要件は、運営基準と保険者のご案内で必ずご確認ください。</b></p>
+  </section>
+
+  <!-- 計画 -->
+  <section class="page" id="p-plan">
+    <h2 class="sec">利用者と計画</h2>
+    <button class="btn p wide" id="btnUserAdd">＋ 利用者を追加する</button>
+    <div class="ulist" id="userList"></div>
+  </section>
+
+  <!-- きろく -->
+  <section class="page" id="p-rec">
+    <div class="datebar">
+      <button id="dPrev" aria-label="前の日">‹</button>
+      <input type="date" id="curDate">
+      <button id="dNext" aria-label="次の日">›</button>
+      <button id="dToday" style="width:auto;padding:0 11px;font-size:13px;font-weight:700;">今日</button>
+    </div>
+    <p class="daylabel" id="dayLabel"></p>
+    <div class="ulist" id="recList"></div>
+  </section>
+
+  <!-- 出力 -->
+  <section class="page" id="p-out">
+    <h2 class="sec">この日の申し送り</h2>
+    <div class="card">
+      <div class="outbox" id="sumText">—</div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn sm" id="btnSumCopy">📋 コピー</button>
+        <button class="btn sm" id="btnSumShare">📤 共有（LINEなど）</button>
+      </div>
+    </div>
+
+    <h2 class="sec">計画書の印刷</h2>
+    <div class="card">
+      <p class="note" style="margin-bottom:9px;">利用者を選んで、個別機能訓練計画書の形で印刷します。</p>
+      <div class="fld"><select id="printUser"></select></div>
+      <button class="btn wide" id="btnPrintPlan">🖨 計画書を印刷する</button>
+      <button class="btn wide" id="btnPrintAll">🖨 全員分をまとめて印刷する</button>
+    </div>
+
+    <h2 class="sec">実施記録</h2>
+    <div class="card">
+      <div class="fld"><label for="outMonth">対象の月</label><input type="month" id="outMonth"></div>
+      <button class="btn wide" id="btnCsv">📄 実施記録をCSVで保存する</button>
+      <button class="btn wide" id="btnPrintRec">🖨 実施記録を印刷する</button>
+    </div>
+
+    <h2 class="sec">バックアップ</h2>
+    <div class="card">
+      <p class="note" style="margin-bottom:9px;">記録は<b>2年間</b>の保存が必要です（自治体の条例で5年としている場合があります）。月に一度はファイルに保存し、別の場所にも控えを置いてください。</p>
+      <button class="btn wide" id="btnBackup">💾 すべてJSONで保存する</button>
+      <button class="btn wide" id="btnRestore">📥 JSONから復元する</button>
+      <input type="file" id="fileRestore" accept=".json,application/json" style="display:none;">
+      <p class="note" id="dataStat"></p>
+    </div>
+
+    <h2 class="sec">設定</h2>
+    <div class="card">
+      <div class="fld"><label for="setFac">事業所の名前</label><input type="text" id="setFac"></div>
+      <div class="fld"><label for="setStaff">機能訓練指導員のお名前</label><input type="text" id="setStaff" placeholder="例：高橋（理学療法士）"></div>
+      <div class="fld"><label for="setMonths">見直しの間隔（か月）</label><input type="number" id="setMonths" min="1" max="12"></div>
+      <button class="btn g" id="btnSaveSet">保存する</button>
+    </div>
+
+    <div class="card">
+      <div class="okbox" style="margin-bottom:11px;">
+        入力した内容は<b>すべてこの端末の中だけ</b>に保存されます。端末を初期化すると消えますので、必ずバックアップをお取りください。
+      </div>
+      <button class="btn wide" id="btnSample">🧪 サンプルデータを入れて試す</button>
+      <button class="btn wide" id="btnClear">🗑 すべてのデータを消す</button>
+      <p class="note">つくる手帖 ／ 機能訓練きろく帖</p>
+    </div>
+  </section>
+</div>
+
+<!-- 計画シート -->
+<dialog id="dlgPlan">
+  <div class="sheet">
+    <div class="sheet-head"><b id="planName">—</b><button id="planClose">閉じる</button></div>
+    <div class="sheet-body">
+
+      <div class="duebox none" id="planDue"><b>—</b></div>
+
+      <h2 class="sec">利用者</h2>
+      <div class="fld"><label for="uName">お名前</label><input type="text" id="uName" placeholder="例：松本 静江"></div>
+      <div class="two">
+        <div class="fld"><label for="uKana">ふりがな</label><input type="text" id="uKana"></div>
+        <div class="fld"><label for="uKaigo">要介護度</label>
+          <select id="uKaigo"><option value="">—</option>
+            <option>要支援1</option><option>要支援2</option><option>要介護1</option><option>要介護2</option>
+            <option>要介護3</option><option>要介護4</option><option>要介護5</option></select></div>
+      </div>
+      <div class="fld">
+        <label>ご利用の曜日</label>
+        <div class="daysel" id="uDays">
+          <label data-d="1"><input type="checkbox">月</label><label data-d="2"><input type="checkbox">火</label>
+          <label data-d="3"><input type="checkbox">水</label><label data-d="4"><input type="checkbox">木</label>
+          <label data-d="5"><input type="checkbox">金</label><label data-d="6"><input type="checkbox">土</label>
+        </div>
+      </div>
+
+      <h2 class="sec">日付</h2>
+      <div class="two">
+        <div class="fld"><label for="pMade">計画をつくった日</label><input type="date" id="pMade"></div>
+        <div class="fld"><label for="pNext">次の見直し（自動）</label><input type="date" id="pNext"></div>
+      </div>
+      <div class="two">
+        <div class="fld"><label for="pVisit">居宅を訪問した日</label><input type="date" id="pVisit"></div>
+        <div class="fld"><label for="pExplain">ご本人・ご家族に説明した日</label><input type="date" id="pExplain"></div>
+      </div>
+      <div class="fld"><label for="pMembers">計画づくりに加わった方</label>
+        <input type="text" id="pMembers" placeholder="例：機能訓練指導員 高橋、生活相談員 佐藤、介護職員 山田"></div>
+
+      <h2 class="sec">はじめの見立て</h2>
+      <div class="fld"><label for="pHope">ご本人の希望</label>
+        <textarea id="pHope" placeholder="例：また自分でお風呂に入れるようになりたい。"></textarea></div>
+      <div class="fld"><label for="pFamily">ご家族の希望</label>
+        <textarea id="pFamily" placeholder="例：転ばずに家の中を歩けるようになってほしい。"></textarea></div>
+      <div class="fld"><label for="pAdl">いまの生活のようす（ADL・IADL）</label>
+        <textarea id="pAdl" placeholder="例：屋内は伝い歩き。浴槽のまたぎに介助が必要。買い物は家族が代行。"></textarea></div>
+      <div class="fld"><label for="pInterest">好きなこと・関心のあること</label>
+        <textarea id="pInterest" placeholder="例：庭の手入れ。近所の友人とのお茶。"></textarea></div>
+
+      <h2 class="sec">目標</h2>
+      <div class="fld"><label for="pLong">長期目標（およそ6か月）</label>
+        <textarea id="pLong" placeholder="例：見守りのもとで、自宅の浴槽をまたいで入浴できる。"></textarea></div>
+      <div class="fld"><label for="pShort">短期目標（およそ3か月）</label>
+        <textarea id="pShort" placeholder="例：手すりを使って、10cmの段差を昇降できる。"></textarea></div>
+
+      <h2 class="sec">プログラム</h2>
+      <div id="progList"></div>
+      <button class="btn wide" id="btnProgAdd">＋ プログラムを追加する</button>
+
+      <h2 class="sec">見直しのときの評価</h2>
+      <div class="fld"><label for="pEval">達成の具合と、次の方針</label>
+        <textarea id="pEval" placeholder="例：段差昇降は手すりありで安定。次は浴槽の高さでの練習に進む。"></textarea></div>
+
+      <div class="row">
+        <button class="btn g" id="btnPlanSave" style="flex:2;">保存する</button>
+        <button class="btn" id="btnPlanRenew">🔄 見直して更新</button>
+      </div>
+      <button class="btn sm wide" id="btnUserDel" style="margin-top:10px;color:var(--verm2);border-color:#E9CFC4;">この利用者を削除する</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- 実施記録シート -->
+<dialog id="dlgRec">
+  <div class="sheet">
+    <div class="sheet-head"><b id="recName">—</b><button id="recClose">閉じる</button></div>
+    <div class="sheet-body">
+      <div class="fld">
+        <label>この日の実施</label>
+        <div class="chips" id="chDone">
+          <button data-v="実施">実施した</button>
+          <button data-v="一部">一部だけ</button>
+          <button data-v="中止">中止した</button>
+        </div>
+      </div>
+      <div class="fld" id="wrapStopNote" style="display:none;">
+        <label for="rStopNote">中止・一部になった理由</label>
+        <input type="text" id="rStopNote" placeholder="例：膝の痛みの訴えがあり、歩行訓練は中止。">
+      </div>
+      <div class="fld">
+        <label>おこなったプログラム</label>
+        <div class="chips multi" id="chProg"></div>
+        <p class="note" style="margin-top:6px;" id="progHint"></p>
+      </div>
+      <div class="fld"><label for="rAmount">回数・時間</label>
+        <input type="text" id="rAmount" placeholder="例：立ち上がり10回×2セット／歩行15分"></div>
+      <div class="fld">
+        <label>ようす</label>
+        <div class="chips g" id="chCond">
+          <button data-v="よくできた">よくできた</button>
+          <button data-v="いつもどおり">いつもどおり</button>
+          <button data-v="疲れが見られた">疲れが見られた</button>
+          <button data-v="痛みの訴えあり">痛みの訴えあり</button>
+        </div>
+      </div>
+      <div class="fld"><label for="rMemo">本人の言葉・気づいたこと</label>
+        <textarea id="rMemo" placeholder="例：「前より足が上がるようになった」と話される。"></textarea></div>
+      <div class="fld"><label for="rStaff">担当した職員</label><input type="text" id="rStaff"></div>
+      <div class="row">
+        <button class="btn g" id="btnRecSave" style="flex:2;">保存する</button>
+        <button class="btn" id="btnRecDel">この日の記録を消す</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+const DB_NAME='kinou-kiroku-db', DB_VER=1;
+let db=null;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const rq=indexedDB.open(DB_NAME,DB_VER);
+    rq.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains('users')) d.createObjectStore('users',{keyPath:'id'});
+      if(!d.objectStoreNames.contains('records')){
+        const st=d.createObjectStore('records',{keyPath:'key'});
+        st.createIndex('date','date',{unique:false});
+      }
+      if(!d.objectStoreNames.contains('meta')) d.createObjectStore('meta',{keyPath:'k'});
+    };
+    rq.onsuccess=e=>{db=e.target.result;res();};
+    rq.onerror=()=>rej(rq.error);
+  });
+}
+function tx(s,m){ return db.transaction(s,m).objectStore(s); }
+function idbPut(s,v){ return new Promise((res,rej)=>{const r=tx(s,'readwrite').put(v);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);}); }
+function idbDel(s,k){ return new Promise((res,rej)=>{const r=tx(s,'readwrite').delete(k);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);}); }
+function idbAll(s){ return new Promise((res,rej)=>{const r=tx(s,'readonly').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);}); }
+function idbGet(s,k){ return new Promise((res,rej)=>{const r=tx(s,'readonly').get(k);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error);}); }
+function idbClear(s){ return new Promise((res,rej)=>{const r=tx(s,'readwrite').clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error);}); }
+
+const CATS=['身体機能の向上','ADLの維持・向上','IADLの維持・向上','社会参加の促進'];
+let users=[], settings={facility:'',staff:'',months:3};
+let curDate=todayStr(), curUser=null, curRec=null, curProgs=[];
+let seq=Date.now()%100000;
+
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2200);}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function wday(ds){const p=ds.split('-').map(Number);return new Date(p[0],p[1]-1,p[2]).getDay();}
+const WD=['日','月','火','水','木','金','土'];
+function jpDate(ds){ if(!ds) return ''; const p=ds.split('-').map(Number);return p[0]+'年'+p[1]+'月'+p[2]+'日';}
+function jpShort(ds){ if(!ds) return '—'; const p=ds.split('-').map(Number);return p[1]+'/'+p[2];}
+function shiftDate(ds,n){const p=ds.split('-').map(Number);const d=new Date(p[0],p[1]-1,p[2]+n);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+/* 月の加算（月末はその月の最終日に丸める） */
+function addMonths(ds,n){
+  if(!ds) return '';
+  const p=ds.split('-').map(Number);
+  let y=p[0], m=p[1]-1+n, d=p[2];
+  y+=Math.floor(m/12); m=((m%12)+12)%12;
+  const last=new Date(y,m+1,0).getDate();
+  if(d>last) d=last;
+  return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
+function daysBetween(a,b){
+  if(!a||!b) return null;
+  const pa=a.split('-').map(Number), pb=b.split('-').map(Number);
+  const da=Date.UTC(pa[0],pa[1]-1,pa[2]), dbb=Date.UTC(pb[0],pb[1]-1,pb[2]);
+  return Math.round((dbb-da)/86400000);
+}
+
+/* ===== 期限の判定 ===== */
+function dueOf(u,recCount){
+  const made=u.plan&&u.plan.made;
+  if(!made) return {kind:'none',days:null,next:'',label:'計画がまだです'};
+  const next=(u.plan.next)||addMonths(made,settings.months||3);
+  const d=daysBetween(todayStr(),next);
+  let kind='ok', label='';
+  if(d<0){ kind='over'; label=Math.abs(d)+'日 過ぎています'; }
+  else if(d<=30){ kind='soon'; label='あと'+d+'日'; }
+  else { kind='ok'; label='あと'+d+'日'; }
+  return {kind:kind,days:d,next:next,label:label};
+}
+function checksOf(u,recCount){
+  const p=u.plan||{};
+  return [
+    {t:'計画',   ok:!!p.made},
+    {t:'居宅訪問',ok:!!p.visit},
+    {t:'説明',   ok:!!p.explain},
+    {t:'実施記録',ok:recCount>0}
+  ];
+}
+
+/* ===== 期限ボード ===== */
+async function renderDue(){
+  if(!users.length){
+    $('#dueSummary').innerHTML='';
+    $('#dueBoard').innerHTML='<p class="empty">まだ利用者が登録されていません。<br>「計画」タブから登録するか、<br>「出力」タブでサンプルデータをお試しください。</p>';
+    return;
+  }
+  const recs=await idbAll('records');
+  const cnt={};
+  recs.filter(r=>r.saved).forEach(r=>{ cnt[r.userId]=(cnt[r.userId]||0)+1; });
+  const rows=users.map(u=>({u:u,due:dueOf(u,cnt[u.id]||0),n:cnt[u.id]||0}));
+  const ord={over:0,none:1,soon:2,ok:3};
+  rows.sort((a,b)=>(ord[a.due.kind]-ord[b.due.kind])||((a.due.days==null?9999:a.due.days)-(b.due.days==null?9999:b.due.days)));
+  const c={over:0,soon:0,ok:0,none:0};
+  rows.forEach(r=>c[r.due.kind]++);
+  $('#dueSummary').innerHTML=
+    '<div class="over"><b>'+c.over+'</b><span>期限ごえ</span></div>'+
+    '<div class="soon"><b>'+c.soon+'</b><span>1か月以内</span></div>'+
+    '<div class="ok"><b>'+c.ok+'</b><span>だいじょうぶ</span></div>'+
+    (c.none?'<div><b>'+c.none+'</b><span>計画なし</span></div>':'');
+  $('#dueBoard').innerHTML=rows.map(r=>{
+    const ch=checksOf(r.u,r.n);
+    return '<button class="bcard '+r.due.kind+'" data-uid="'+r.u.id+'">'+
+      '<div class="bhead"><b>'+esc(r.u.name||'（名前なし）')+'</b><span class="days">'+esc(r.due.label)+'</span></div>'+
+      '<div class="bmeta">'+(r.due.next?'次の見直し '+jpDate(r.due.next):'計画をつくってください')+
+      '　／　実施 '+r.n+'件</div>'+
+      '<div class="checks">'+ch.map(x=>'<span class="'+(x.ok?'y':'n')+'">'+(x.ok?'✓':'—')+' '+x.t+'</span>').join('')+'</div>'+
+      '</button>';
+  }).join('');
+  $('#dueBoard').querySelectorAll('.bcard').forEach(b=>b.addEventListener('click',()=>openPlan(b.dataset.uid)));
+}
+
+/* ===== 計画 ===== */
+function renderUsers(){
+  if(!users.length){ $('#userList').innerHTML='<p class="empty">まだ登録がありません。</p>'; return; }
+  $('#userList').innerHTML=users.map(u=>{
+    const p=u.plan||{};
+    const n=(p.programs||[]).length;
+    return '<button class="urow" data-uid="'+u.id+'"><span class="nm"><b>'+esc(u.name||'（名前なし）')+
+      '</b><span>'+esc(u.kaigo||'')+((u.days&&u.days.length)?'　'+u.days.map(d=>WD[d]).join('・'):'')+
+      (p.made?'　計画 '+jpShort(p.made):'　計画なし')+'</span></span>'+
+      '<span class="st'+(n?' done':'')+'">'+(n?'訓練'+n+'件':'未作成')+'</span></button>';
+  }).join('');
+  $('#userList').querySelectorAll('.urow').forEach(b=>b.addEventListener('click',()=>openPlan(b.dataset.uid)));
+  const sel=$('#printUser');
+  sel.innerHTML=users.map(u=>'<option value="'+u.id+'">'+esc(u.name||'（名前なし）')+'</option>').join('');
+}
+function blankPlan(){
+  return {made:'',next:'',visit:'',explain:'',members:settings.staff||'',
+    hope:'',family:'',adl:'',interest:'',long:'',short:'',programs:[],eval:''};
+}
+function openPlan(uid){
+  curUser = uid ? users.find(u=>u.id===uid) : null;
+  const u=curUser||{};
+  const p=(u.plan)||blankPlan();
+  curProgs=JSON.parse(JSON.stringify(p.programs||[]));
+  $('#planName').textContent= curUser ? (u.name||'利用者') : '利用者を追加';
+  $('#uName').value=u.name||''; $('#uKana').value=u.kana||''; $('#uKaigo').value=u.kaigo||'';
+  $$('#uDays label').forEach(l=>{
+    const on=(u.days||[]).includes(Number(l.dataset.d));
+    l.classList.toggle('on',on); l.querySelector('input').checked=on;
+  });
+  $('#pMade').value=p.made||''; $('#pNext').value=p.next||'';
+  $('#pVisit').value=p.visit||''; $('#pExplain').value=p.explain||'';
+  $('#pMembers').value=p.members||settings.staff||'';
+  $('#pHope').value=p.hope||''; $('#pFamily').value=p.family||'';
+  $('#pAdl').value=p.adl||''; $('#pInterest').value=p.interest||'';
+  $('#pLong').value=p.long||''; $('#pShort').value=p.short||'';
+  $('#pEval').value=p.eval||'';
+  $('#btnUserDel').style.display=curUser?'':'none';
+  $('#btnPlanRenew').style.display=(curUser&&p.made)?'':'none';
+  renderProgs(); paintPlanDue();
+  $('#dlgPlan').showModal();
+}
+function paintPlanDue(){
+  const made=$('#pMade').value;
+  const box=$('#planDue');
+  if(!made){ box.className='duebox none'; box.innerHTML='<b>計画をつくった日を入れてください</b>次の見直しの日を自動で出します。'; return; }
+  const next=$('#pNext').value||addMonths(made,settings.months||3);
+  $('#pNext').value=next;
+  const d=daysBetween(todayStr(),next);
+  if(d<0){ box.className='duebox over'; box.innerHTML='<b>見直しの期限を '+Math.abs(d)+'日 過ぎています</b>'+jpDate(next)+' が目安の日でした。'; }
+  else if(d<=30){ box.className='duebox soon'; box.innerHTML='<b>見直しまで あと'+d+'日</b>'+jpDate(next)+' が目安です。'; }
+  else { box.className='duebox ok'; box.innerHTML='<b>見直しまで あと'+d+'日</b>'+jpDate(next)+' が目安です。'; }
+}
+$('#pMade').addEventListener('change',()=>{ $('#pNext').value=addMonths($('#pMade').value,settings.months||3); paintPlanDue(); });
+$('#pNext').addEventListener('change',paintPlanDue);
+$$('#uDays label').forEach(l=>l.addEventListener('click',e=>{
+  e.preventDefault();
+  const i=l.querySelector('input'); i.checked=!i.checked; l.classList.toggle('on',i.checked);
+}));
+
+function renderProgs(){
+  if(!curProgs.length){ $('#progList').innerHTML='<p class="note" style="margin-bottom:9px;">まだプログラムがありません。下のボタンから追加してください。</p>'; return; }
+  $('#progList').innerHTML=curProgs.map((p,i)=>
+    '<div class="prog" data-i="'+i+'">'+
+    '<button class="del" data-del="'+i+'" aria-label="消す">×</button>'+
+    '<span class="cat">'+esc(p.cat||CATS[0])+'</span>'+
+    '<div class="fld" style="margin-bottom:8px;"><label>種目</label><input type="text" data-f="name" value="'+esc(p.name||'')+'" placeholder="例：立ち上がり練習"></div>'+
+    '<div class="fld" style="margin-bottom:8px;"><label>ねらい（区分）</label>'+
+      '<select data-f="cat">'+CATS.map(c=>'<option'+(c===(p.cat||CATS[0])?' selected':'')+'>'+c+'</option>').join('')+'</select></div>'+
+    '<div class="two"><div class="fld" style="margin-bottom:8px;"><label>回数・頻度</label><input type="text" data-f="times" value="'+esc(p.times||'')+'" placeholder="週2回 10回×2set"></div>'+
+    '<div class="fld" style="margin-bottom:8px;"><label>時間</label><input type="text" data-f="minutes" value="'+esc(p.minutes||'')+'" placeholder="15分"></div></div>'+
+    '<div class="fld" style="margin-bottom:8px;"><label>留意点</label><input type="text" data-f="point" value="'+esc(p.point||'')+'" placeholder="例：ふらつきに注意。手すりを使う。"></div>'+
+    '<div class="fld" style="margin-bottom:0;"><label>担当</label><input type="text" data-f="staff" value="'+esc(p.staff||'')+'"></div>'+
+    '</div>').join('');
+  $('#progList').querySelectorAll('.prog').forEach(box=>{
+    const i=Number(box.dataset.i);
+    box.querySelectorAll('[data-f]').forEach(el=>{
+      el.addEventListener('input',()=>{ curProgs[i][el.dataset.f]=el.value; });
+      el.addEventListener('change',()=>{ curProgs[i][el.dataset.f]=el.value; if(el.dataset.f==='cat') renderProgs(); });
+    });
+    box.querySelector('[data-del]').addEventListener('click',()=>{
+      if(!confirm('このプログラムを消しますか？')) return;
+      curProgs.splice(i,1); renderProgs();
+    });
+  });
+}
+$('#btnProgAdd').addEventListener('click',()=>{
+  curProgs.push({name:'',cat:CATS[0],times:'',minutes:'',point:'',staff:settings.staff||''});
+  renderProgs();
+  const el=$('#progList').querySelector('.prog:last-child input[data-f="name"]');
+  if(el) el.focus();
+});
+$('#planClose').addEventListener('click',()=>$('#dlgPlan').close());
+function collectPlan(){
+  return {made:$('#pMade').value,next:$('#pNext').value,visit:$('#pVisit').value,explain:$('#pExplain').value,
+    members:$('#pMembers').value.trim(),hope:$('#pHope').value.trim(),family:$('#pFamily').value.trim(),
+    adl:$('#pAdl').value.trim(),interest:$('#pInterest').value.trim(),
+    long:$('#pLong').value.trim(),short:$('#pShort').value.trim(),
+    programs:curProgs.filter(p=>p.name&&p.name.trim()),eval:$('#pEval').value.trim()};
+}
+$('#btnPlanSave').addEventListener('click',async ()=>{
+  const name=$('#uName').value.trim();
+  if(!name){ toast('お名前を入力してください'); return; }
+  const days=$$('#uDays label').filter(l=>l.querySelector('input').checked).map(l=>Number(l.dataset.d));
+  const data={name:name,kana:$('#uKana').value.trim(),kaigo:$('#uKaigo').value,days:days,
+    plan:collectPlan(),active:true};
+  if(curUser){ Object.assign(curUser,data); await idbPut('users',curUser); }
+  else { const u=Object.assign({id:'u'+(++seq)},data); users.push(u); await idbPut('users',u); }
+  $('#dlgPlan').close(); renderUsers(); await renderDue(); await renderRecList();
+  toast('保存しました');
+});
+$('#btnPlanRenew').addEventListener('click',()=>{
+  if(!confirm('見直しをして、計画を更新します。\n\nつくった日を今日にし、次の見直しの日を計算し直します。\n（いまの内容はそのまま引き継ぎます）\n\nよろしいですか？')) return;
+  const t=todayStr();
+  $('#pMade').value=t;
+  $('#pNext').value=addMonths(t,settings.months||3);
+  $('#pExplain').value=''; $('#pVisit').value='';
+  paintPlanDue();
+  toast('日付を更新しました。訪問日と説明日は、済んだら入れてください');
+});
+$('#btnUserDel').addEventListener('click',async ()=>{
+  if(!curUser) return;
+  if(!confirm(curUser.name+' 様を削除します。\n過去の実施記録は残ります。よろしいですか？')) return;
+  users=users.filter(u=>u.id!==curUser.id);
+  await idbDel('users',curUser.id);
+  $('#dlgPlan').close(); renderUsers(); await renderDue(); await renderRecList();
+  toast('削除しました');
+});
+$('#btnUserAdd').addEventListener('click',()=>openPlan(null));
+
+/* ===== 実施記録 ===== */
+function setChips(sel,val){ $$(sel+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===val)); }
+function getChips(sel){ const b=document.querySelector(sel+' button.on'); return b?b.dataset.v:''; }
+function initChips(sel,cb){
+  $$(sel+' button').forEach(b=>b.addEventListener('click',()=>{
+    const was=b.classList.contains('on');
+    $$(sel+' button').forEach(x=>x.classList.remove('on'));
+    if(!was) b.classList.add('on');
+    if(cb) cb(was?'':b.dataset.v);
+  }));
+}
+initChips('#chDone',v=>{ $('#wrapStopNote').style.display=(v==='中止'||v==='一部')?'':'none'; });
+initChips('#chCond');
+function setMulti(sel,arr){ $$(sel+' button').forEach(b=>b.classList.toggle('on',(arr||[]).includes(b.dataset.v))); }
+function getMulti(sel){ return $$(sel+' button.on').map(b=>b.dataset.v); }
+
+async function renderRecList(){
+  $('#curDate').value=curDate;
+  $('#dayLabel').textContent=jpDate(curDate)+'（'+WD[wday(curDate)]+'）　'+(settings.facility||'');
+  if(!users.length){ $('#recList').innerHTML='<p class="empty">まだ利用者が登録されていません。</p>'; return; }
+  const wd=wday(curDate);
+  const today=users.filter(u=>!u.days||!u.days.length||u.days.includes(wd));
+  const others=users.filter(u=>!today.includes(u));
+  const recs=(await idbAll('records')).filter(r=>r.date===curDate);
+  const byId={}; recs.forEach(r=>byId[r.userId]=r);
+  const rowOf=u=>{
+    const r=byId[u.id];
+    let st='<span class="st">未記録</span>';
+    if(r&&r.saved) st='<span class="st done">'+esc(r.done||'実施')+'</span>';
+    const n=((u.plan&&u.plan.programs)||[]).length;
+    return '<button class="urow" data-uid="'+u.id+'"><span class="nm"><b>'+esc(u.name||'（名前なし）')+
+      '</b><span>'+(n?'プログラム'+n+'件':'計画がまだです')+
+      (r&&r.saved&&r.progs&&r.progs.length?'　'+esc(r.progs.join('、')):'')+'</span></span>'+st+'</button>';
+  };
+  let h=today.map(rowOf).join('');
+  if(!today.length) h='<p class="empty">この曜日のご利用予定はありません。</p>';
+  if(others.length) h+='<p class="note" style="margin:14px 0 4px;">ほかの利用者</p>'+others.map(rowOf).join('');
+  $('#recList').innerHTML=h;
+  $('#recList').querySelectorAll('.urow').forEach(b=>b.addEventListener('click',()=>openRec(b.dataset.uid)));
+}
+async function openRec(uid){
+  curUser=users.find(u=>u.id===uid); if(!curUser) return;
+  const key=curDate+'_'+uid;
+  curRec=await idbGet('records',key) || {key:key,date:curDate,userId:uid,done:'実施',stopNote:'',
+    progs:[],amount:'',cond:'',memo:'',staff:settings.staff||'',saved:false};
+  $('#recName').textContent=(curUser.name||'—')+'　'+jpDate(curDate);
+  const list=((curUser.plan&&curUser.plan.programs)||[]).map(p=>p.name).filter(Boolean);
+  $('#chProg').innerHTML=list.length
+    ? list.map(n=>'<button data-v="'+esc(n)+'">'+esc(n)+'</button>').join('')
+    : '';
+  $('#progHint').textContent=list.length?'計画に入れたプログラムが並びます。いくつでも選べます。':'計画タブでプログラムを登録すると、ここに並びます。';
+  $$('#chProg button').forEach(b=>b.addEventListener('click',()=>b.classList.toggle('on')));
+  setChips('#chDone',curRec.done||'実施');
+  $('#wrapStopNote').style.display=(curRec.done==='中止'||curRec.done==='一部')?'':'none';
+  $('#rStopNote').value=curRec.stopNote||'';
+  setMulti('#chProg',curRec.progs);
+  $('#rAmount').value=curRec.amount||'';
+  setChips('#chCond',curRec.cond||'');
+  $('#rMemo').value=curRec.memo||''; $('#rStaff').value=curRec.staff||settings.staff||'';
+  $('#dlgRec').showModal();
+}
+$('#recClose').addEventListener('click',()=>$('#dlgRec').close());
+$('#btnRecSave').addEventListener('click',async ()=>{
+  curRec.done=getChips('#chDone')||'実施';
+  curRec.stopNote=$('#rStopNote').value.trim();
+  curRec.progs=getMulti('#chProg');
+  curRec.amount=$('#rAmount').value.trim();
+  curRec.cond=getChips('#chCond');
+  curRec.memo=$('#rMemo').value.trim();
+  curRec.staff=$('#rStaff').value.trim();
+  curRec.saved=true;
+  await idbPut('records',curRec);
+  $('#dlgRec').close(); await renderRecList(); await renderDue(); await renderSummary();
+  toast('保存しました');
+});
+$('#btnRecDel').addEventListener('click',async ()=>{
+  if(!confirm('この日の記録を消します。よろしいですか？')) return;
+  await idbDel('records',curRec.key);
+  $('#dlgRec').close(); await renderRecList(); await renderDue(); await renderSummary();
+  toast('消しました');
+});
+$('#curDate').addEventListener('change',async e=>{curDate=e.target.value||todayStr();await renderRecList();await renderSummary();});
+$('#dPrev').addEventListener('click',async ()=>{curDate=shiftDate(curDate,-1);await renderRecList();await renderSummary();});
+$('#dNext').addEventListener('click',async ()=>{curDate=shiftDate(curDate,1);await renderRecList();await renderSummary();});
+$('#dToday').addEventListener('click',async ()=>{curDate=todayStr();await renderRecList();await renderSummary();});
+
+/* ===== 出力 ===== */
+function copyText(t){
+  if(navigator.clipboard&&window.isSecureContext) return navigator.clipboard.writeText(t);
+  return new Promise(res=>{
+    const ta=document.createElement('textarea');
+    ta.value=t; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{document.execCommand('copy');}catch(e){}
+    document.body.removeChild(ta); res();
+  });
+}
+function recText(u,r){
+  const L=['【'+jpDate(r.date)+'　'+(u.name||'')+' 様】'];
+  L.push(r.done||'実施');
+  if(r.stopNote) L.push('理由：'+r.stopNote);
+  if(r.progs&&r.progs.length) L.push('内容：'+r.progs.join('、'));
+  if(r.amount) L.push('量：'+r.amount);
+  if(r.cond) L.push('ようす：'+r.cond);
+  if(r.memo) L.push(r.memo);
+  if(r.staff) L.push('担当：'+r.staff);
+  return L.join('\n');
+}
+async function renderSummary(){
+  const recs=(await idbAll('records')).filter(r=>r.date===curDate&&r.saved);
+  if(!recs.length){ $('#sumText').textContent='この日の記録はまだありません。'; return; }
+  const L=['■ '+(settings.facility||'')+'　'+jpDate(curDate)+' の機能訓練','' ];
+  recs.forEach(r=>{ const u=users.find(x=>x.id===r.userId); L.push(recText(u||{name:'（不明）'},r)); L.push(''); });
+  $('#sumText').textContent=L.join('\n').trim();
+}
+$('#btnSumCopy').addEventListener('click',()=>copyText($('#sumText').textContent).then(()=>toast('コピーしました')));
+$('#btnSumShare').addEventListener('click',()=>{
+  const t=$('#sumText').textContent;
+  if(navigator.share) navigator.share({text:t}).catch(()=>{});
+  else copyText(t).then(()=>toast('コピーしました'));
+});
+
+function planHtml(u){
+  const p=u.plan||{};
+  const rows=(p.programs||[]).map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.name||'')+'</td><td>'+esc(x.cat||'')+
+    '</td><td>'+esc(x.times||'')+'</td><td>'+esc(x.minutes||'')+'</td><td>'+esc(x.point||'')+'</td><td>'+esc(x.staff||'')+'</td></tr>').join('');
+  return '<div class="pg">'+
+    '<h2>個別機能訓練計画書</h2>'+
+    '<table class="hd"><tr><th>事業所</th><td>'+esc(settings.facility||'')+'</td>'+
+    '<th>作成日</th><td>'+jpDate(p.made)+'</td></tr>'+
+    '<tr><th>お名前</th><td>'+esc(u.name||'')+'　様'+(u.kana?'（'+esc(u.kana)+'）':'')+'</td>'+
+    '<th>要介護度</th><td>'+esc(u.kaigo||'')+'</td></tr>'+
+    '<tr><th>居宅訪問日</th><td>'+jpDate(p.visit)+'</td>'+
+    '<th>説明・同意日</th><td>'+jpDate(p.explain)+'</td></tr>'+
+    '<tr><th>次回見直し</th><td>'+jpDate(p.next)+'</td>'+
+    '<th>作成に加わった者</th><td>'+esc(p.members||'')+'</td></tr></table>'+
+    '<table class="bx"><tr><th>ご本人の希望</th><td>'+esc(p.hope||'')+'</td></tr>'+
+    '<tr><th>ご家族の希望</th><td>'+esc(p.family||'')+'</td></tr>'+
+    '<tr><th>生活のようす</th><td>'+esc(p.adl||'')+'</td></tr>'+
+    '<tr><th>興味・関心</th><td>'+esc(p.interest||'')+'</td></tr>'+
+    '<tr><th>長期目標（6か月）</th><td>'+esc(p.long||'')+'</td></tr>'+
+    '<tr><th>短期目標（3か月）</th><td>'+esc(p.short||'')+'</td></tr></table>'+
+    '<h3>訓練プログラム</h3>'+
+    '<table class="tbl"><tr><th>No</th><th>種目</th><th>ねらい</th><th>回数・頻度</th><th>時間</th><th>留意点</th><th>担当</th></tr>'+
+    (rows||'<tr><td colspan="7">—</td></tr>')+'</table>'+
+    '<table class="bx" style="margin-top:8px;"><tr><th>見直しの評価</th><td>'+esc(p.eval||'')+'</td></tr></table>'+
+    '<p class="sign">ご説明を受け、内容に同意しました。　　年　　月　　日　　ご署名 ______________________</p>'+
+    '</div>';
+}
+function printWindow(html,title){
+  const w=window.open('','_blank');
+  if(!w){ toast('印刷用の画面を開けませんでした'); return; }
+  w.document.write('<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>'+title+'</title><style>'+
+    'body{font-family:-apple-system,"Hiragino Sans",sans-serif;padding:14px;color:#1B2A4A;}'+
+    '.pg{break-after:page;margin-bottom:22px;}.pg:last-child{break-after:auto;}'+
+    'h2{font-size:17px;text-align:center;margin:0 0 10px;letter-spacing:.1em;}'+
+    'h3{font-size:13px;margin:12px 0 5px;}'+
+    'table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:8px;}'+
+    'th,td{border:1px solid #888;padding:5px 6px;text-align:left;vertical-align:top;}'+
+    'th{background:#eee;white-space:nowrap;}'+
+    'table.hd th{width:15%;}table.bx th{width:20%;}table.bx td{min-height:34px;}'+
+    '.sign{font-size:11.5px;margin-top:14px;}'+
+    '</style></head><body>'+html+'</body></html>');
+  w.document.close();
+  setTimeout(()=>w.print(),400);
+}
+$('#btnPrintPlan').addEventListener('click',()=>{
+  const u=users.find(x=>x.id===$('#printUser').value);
+  if(!u){ toast('利用者を選んでください'); return; }
+  printWindow(planHtml(u),'個別機能訓練計画書');
+});
+$('#btnPrintAll').addEventListener('click',()=>{
+  if(!users.length){ toast('利用者がいません'); return; }
+  printWindow(users.map(planHtml).join(''),'個別機能訓練計画書');
+});
+
+$('#btnCsv').addEventListener('click',async ()=>{
+  const ym=$('#outMonth').value;
+  if(!ym){ toast('月を選んでください'); return; }
+  const recs=(await idbAll('records')).filter(r=>r.saved&&r.date.slice(0,7)===ym).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!recs.length){ toast('この月の記録はありません'); return; }
+  const head=['日付','お名前','要介護度','実施','理由','おこなったプログラム','回数・時間','ようす','気づいたこと','担当'];
+  const rows=recs.map(r=>{
+    const u=users.find(x=>x.id===r.userId)||{};
+    return [r.date,u.name||'',u.kaigo||'',r.done||'',r.stopNote||'',(r.progs||[]).join(' / '),
+      r.amount||'',r.cond||'',r.memo||'',r.staff||''];
+  });
+  const csv='\uFEFF'+[head].concat(rows).map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='機能訓練記録-'+ym+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  toast('CSVを保存しました');
+});
+$('#btnPrintRec').addEventListener('click',async ()=>{
+  const ym=$('#outMonth').value;
+  if(!ym){ toast('月を選んでください'); return; }
+  const recs=(await idbAll('records')).filter(r=>r.saved&&r.date.slice(0,7)===ym);
+  if(!recs.length){ toast('この月の記録はありません'); return; }
+  let h='<h2>個別機能訓練 実施記録　'+ym.replace('-','年')+'月</h2>';
+  users.forEach(u=>{
+    const rs=recs.filter(r=>r.userId===u.id).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!rs.length) return;
+    h+='<h3>'+esc(u.name)+' 様（'+esc(u.kaigo||'')+'）</h3><table class="tbl">'+
+      '<tr><th>日</th><th>実施</th><th>プログラム</th><th>回数・時間</th><th>ようす</th><th>気づいたこと</th><th>担当</th></tr>'+
+      rs.map(r=>'<tr><td>'+Number(r.date.slice(8))+'</td><td>'+esc(r.done||'')+'</td><td>'+
+        esc((r.progs||[]).join('、'))+'</td><td>'+esc(r.amount||'')+'</td><td>'+esc(r.cond||'')+'</td><td>'+
+        esc([r.stopNote,r.memo].filter(Boolean).join(' ／ '))+'</td><td>'+esc(r.staff||'')+'</td></tr>').join('')+
+      '</table>';
+  });
+  printWindow('<div class="pg">'+h+'</div>','個別機能訓練 実施記録');
+});
+
+/* ===== バックアップ・設定 ===== */
+$('#btnBackup').addEventListener('click',async ()=>{
+  const data={app:'kinou-kiroku',ver:1,users:users,records:await idbAll('records'),settings:settings};
+  const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='機能訓練きろく帖-'+todayStr()+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  toast('保存しました');
+});
+$('#btnRestore').addEventListener('click',()=>{ $('#fileRestore').value=''; $('#fileRestore').click(); });
+$('#fileRestore').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=async ()=>{
+    try{
+      const d=JSON.parse(rd.result);
+      if(d.app!=='kinou-kiroku'||!Array.isArray(d.users)){ toast('機能訓練きろく帖のファイルではありません'); return; }
+      if(!confirm('いまのデータをすべて置き換えます。よろしいですか？')) return;
+      await applyData(d); toast('復元しました');
+    }catch(err){ toast('読み込めませんでした'); }
+  };
+  rd.readAsText(f,'utf-8');
+});
+async function applyData(d){
+  await idbClear('users'); await idbClear('records');
+  for(const u of d.users) await idbPut('users',u);
+  for(const r of (d.records||[])) await idbPut('records',r);
+  settings=Object.assign({facility:'',staff:'',months:3},d.settings||{});
+  await idbPut('meta',{k:'settings',v:settings});
+  users=d.users.slice();
+  fillSettings(); renderUsers(); await renderDue(); await renderRecList(); await renderSummary(); await stat();
+}
+async function stat(){
+  const all=await idbAll('records');
+  $('#dataStat').textContent='いまの保存数：利用者 '+users.length+'名／実施記録 '+all.filter(r=>r.saved).length+'件';
+}
+function fillSettings(){
+  $('#setFac').value=settings.facility||'';
+  $('#setStaff').value=settings.staff||'';
+  $('#setMonths').value=settings.months||3;
+}
+$('#btnSaveSet').addEventListener('click',async ()=>{
+  settings.facility=$('#setFac').value.trim();
+  settings.staff=$('#setStaff').value.trim();
+  const m=Number($('#setMonths').value); settings.months=(m>=1&&m<=12)?m:3;
+  await idbPut('meta',{k:'settings',v:settings});
+  await renderDue(); await renderRecList();
+  toast('保存しました');
+});
+$('#btnClear').addEventListener('click',async ()=>{
+  if(!confirm('この端末のすべての利用者と記録を消します。\n元にもどせません。よろしいですか？')) return;
+  if(!confirm('本当によろしいですか？\n先にバックアップをお取りください。')) return;
+  await idbClear('users'); await idbClear('records');
+  users=[]; renderUsers(); await renderDue(); await renderRecList(); await renderSummary(); await stat();
+  toast('消しました');
+});
+
+/* ===== サンプル ===== */
+function sampleData(){
+  const t=todayStr();
+  const U=[
+    {id:'s1',name:'松本 静江',kana:'まつもと しずえ',kaigo:'要介護3',days:[1,3,5],active:true,
+     plan:{made:shiftDate(t,-100),next:addMonths(shiftDate(t,-100),3),visit:shiftDate(t,-103),explain:shiftDate(t,-98),
+       members:'機能訓練指導員 高橋（理学療法士）、生活相談員 佐藤、介護職員 山田',
+       hope:'また自分でお風呂に入れるようになりたい。',
+       family:'転ばずに家の中を歩けるようになってほしい。',
+       adl:'屋内は伝い歩き。浴槽のまたぎに介助が必要。買い物は家族が代行。',
+       interest:'庭の手入れ。近所の友人とのお茶。',
+       long:'見守りのもとで、自宅の浴槽をまたいで入浴できる。',
+       short:'手すりを使って、10cmの段差を昇降できる。',
+       programs:[
+         {name:'立ち上がり練習',cat:'身体機能の向上',times:'週3回 10回×2set',minutes:'10分',point:'ふらつきに注意。手すりを使う。',staff:'高橋'},
+         {name:'段差昇降練習',cat:'ADLの維持・向上',times:'週3回 10往復',minutes:'10分',point:'10cm台から。必ず横に付き添う。',staff:'高橋'},
+         {name:'浴槽またぎ動作',cat:'ADLの維持・向上',times:'週1回',minutes:'10分',point:'浴室を模した設定で。滑り止めマット使用。',staff:'高橋'}
+       ],eval:''}},
+    {id:'s2',name:'川上 定男',kana:'かわかみ さだお',kaigo:'要介護1',days:[1,3,5],active:true,
+     plan:{made:shiftDate(t,-25),next:addMonths(shiftDate(t,-25),3),visit:shiftDate(t,-28),explain:shiftDate(t,-24),
+       members:'機能訓練指導員 高橋、生活相談員 佐藤',
+       hope:'畑仕事をまた続けたい。',family:'外出のときに転ばないでほしい。',
+       adl:'屋外は杖歩行。長い距離でふらつきが出る。',
+       interest:'家庭菜園。将棋。',
+       long:'杖を使って、近所の畑まで一人で往復できる。',
+       short:'連続して10分間、休まずに歩ける。',
+       programs:[
+         {name:'歩行訓練',cat:'身体機能の向上',times:'週3回',minutes:'15分',point:'疲労を確認しながら。5分ごとに休憩の声かけ。',staff:'高橋'},
+         {name:'片足立ちバランス',cat:'身体機能の向上',times:'週3回 左右30秒×2',minutes:'5分',point:'必ず手すりの近くで。',staff:'高橋'}
+       ],eval:''}},
+    {id:'s3',name:'中村 ハル',kana:'なかむら はる',kaigo:'要支援2',days:[2,4],active:true,
+     plan:{made:'',next:'',visit:'',explain:'',members:'',hope:'',family:'',adl:'',interest:'',
+       long:'',short:'',programs:[],eval:''}}
+  ];
+  const d1=shiftDate(t,-2), d2=shiftDate(t,-4);
+  const R=[
+    {key:d1+'_s1',date:d1,userId:'s1',done:'実施',stopNote:'',
+     progs:['立ち上がり練習','段差昇降練習'],amount:'立ち上がり10回×2set／段差10往復',
+     cond:'よくできた',memo:'「前より足が上がるようになった」と話される。',staff:'高橋',saved:true},
+    {key:d1+'_s2',date:d1,userId:'s2',done:'一部',stopNote:'膝の痛みの訴えがあり、歩行訓練は10分で終了。',
+     progs:['歩行訓練'],amount:'歩行10分',cond:'痛みの訴えあり',
+     memo:'看護師に報告。次回は時間を短くして様子を見る。',staff:'高橋',saved:true},
+    {key:d2+'_s1',date:d2,userId:'s1',done:'実施',stopNote:'',
+     progs:['立ち上がり練習','段差昇降練習','浴槽またぎ動作'],amount:'各メニューどおり',
+     cond:'いつもどおり',memo:'',staff:'高橋',saved:true}
+  ];
+  return {app:'kinou-kiroku',ver:1,users:U,records:R,
+    settings:{facility:'デイサービス みどりの里',staff:'高橋（理学療法士）',months:3}};
+}
+$('#btnSample').addEventListener('click',async ()=>{
+  if(users.length&&!confirm('いまのデータをすべて置き換えて、サンプルを入れます。\nよろしいですか？')) return;
+  await applyData(sampleData());
+  toast('サンプルを入れました');
+});
+
+/* ===== タブ ===== */
+$$('nav.tabs button').forEach(b=>b.addEventListener('click',async ()=>{
+  $$('nav.tabs button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  $$('.page').forEach(p=>p.classList.remove('on'));
+  $('#p-'+b.dataset.tab).classList.add('on');
+  if(b.dataset.tab==='due') await renderDue();
+  if(b.dataset.tab==='plan') renderUsers();
+  if(b.dataset.tab==='rec') await renderRecList();
+  if(b.dataset.tab==='out'){ await renderSummary(); await stat(); }
+  window.scrollTo(0,0);
+}));
+
+/* ===== 起動 ===== */
+(async function init(){
+  try{ await openDB(); }
+  catch(e){ alert('この端末では記録を保存できません。ブラウザの設定をご確認ください。'); return; }
+  users=await idbAll('users');
+  const st=await idbGet('meta','settings');
+  if(st&&st.v) settings=Object.assign(settings,st.v);
+  fillSettings(); renderUsers();
+  $('#curDate').value=curDate;
+  $('#outMonth').value=curDate.slice(0,7);
+  await renderDue(); await renderRecList(); await renderSummary(); await stat();
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+</script>
+</body>
+</html>
